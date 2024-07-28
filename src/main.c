@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <errno.h>
 #include <stdint.h>
 
 #include <sys/stat.h>
@@ -49,7 +48,7 @@ void term_dump_tree_recursive(int fs_fd, int out_fd, uint64_t node_location)
     dprintf(fs_fd, "\n");
 
     if(node_header.level > 0) {
-        struct btrfs_key_ptr *ptrs = malloc(node_header.nritems * sizeof(ptrs));
+        struct btrfs_key_ptr *ptrs = malloc(node_header.nritems * sizeof(*ptrs));
         if(ptrs == NULL) {
             error("Failed to allocate ptrs for node 0x%016lX", node_location);
             return;
@@ -66,6 +65,28 @@ void term_dump_tree_recursive(int fs_fd, int out_fd, uint64_t node_location)
         }
 
         free(ptrs);
+    }
+}
+
+void find_super_magics(int fs_fd)
+{
+    // uint64_t btrfs_super_magic = 0x9123683e;
+    // uint64_t btrfs_super_magic = 0x5F42485266535F4D;
+    uint64_t btrfs_super_magic = 0x4D5F53665248425F;
+
+    off_t file_len = lseek(fs_fd, 0, SEEK_END);
+    lseek(fs_fd, 0, SEEK_SET);
+
+    uint64_t curr = 0;
+    read(fs_fd, &curr, 7);
+
+    for(off_t i = 7; i < file_len; i++) {
+        curr >>= 8;
+        read(fs_fd, ((uint8_t *) &curr) + 7, 1);
+
+        if(curr == btrfs_super_magic) {
+            printf("Magic found at: 0x%016lX (\"%.8s\")\n", i, (char *) &curr);
+        }
     }
 }
 
@@ -99,6 +120,11 @@ int main(int argc, char **argv)
     printf("\n");
 
     dump_tree_recursive(fd, STDOUT_FILENO, super.root);
+
+    printf("\n");
+    printf("Searching for supers:\n");
+    find_super_magics(fd);
+    printf("Done\n");
 
     // lseek(fd, super.root, SEEK_SET);
 

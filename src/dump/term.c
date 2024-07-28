@@ -57,6 +57,11 @@ void term_dump_super(int fd, struct btrfs_super_block *super)
     DUMP_U64(fd, "flags", super->flags);
 
     DUMP_U64(fd, "magic", super->magic);
+
+    dprintf(fd, "magic_raw: ");
+    btd_dump_byte_array(fd, (uint8_t *) &(super->magic), 8, BTD_DBA_BIG_ENDIAN);
+    dprintf(fd, "\n");
+
     DUMP_U64(fd, "generation", super->generation);
     DUMP_U64(fd, "root", super->root);
     DUMP_U64(fd, "chunk root", super->chunk_root);
