@@ -1,7 +1,11 @@
 # IDE Files
 .vscode/
 
+compile_commands.json
+.cache/
+
 # Build Files
 Makefile
 *.make
+
 build/

@@ -35,10 +35,10 @@ If you are unable to locate `libbtrfs-dev` on your distro, ctree.h can also be f
 Linux kernel source tree at fs/btrfs/ctree.h.
 
 ## Building
+This project uses [premake5](https://premake.github.io/) as its build generator.  
+  
 To build, run the following commands in the root directory of the project
 ```sh
-rm -rf build && mkdir build
-cd build
-cmake ..
+premake5 gmake2
 make
 ```
